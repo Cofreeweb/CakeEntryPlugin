@@ -1,0 +1,1 @@
+<a href="#/blocks/edit/{{block.id}}"><?= __d( "admin", "Editar") ?></a>

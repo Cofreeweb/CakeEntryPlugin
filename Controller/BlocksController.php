@@ -7,79 +7,102 @@ App::uses('EntryAppController', 'Entry.Controller');
 class BlocksController extends EntryAppController 
 {
   
-  public $uses = array( 'Entry.Block');
+  public $uses = array( 'Entry.Entry');
 
   public function beforeFilter()
   {
     parent::beforeFilter();
-    $this->Auth->allow();
   }
   
   public function admin_edit()
   {
     if( $this->request->is( 'post', 'put'))
     {
-      $this->Block->create();
-      
-      if( $this->Block->save( $this->request->data))
+      if( isset( $this->request->data ['photos']))
       {
-        $this->set( 'success', true);
-        $this->set( '_serialize', array( 'success'));
+        unset( $this->request->data ['photos']);
       }
+      
+      $this->Entry->updateSubdocument( 'rows.blocks', $this->request->data ['id'], $this->request->data, array(
+          'revision' => 'draft'
+      ));
+      
+      $this->set( 'success', true);
+      $this->set( '_serialize', array( 'success'));
     }
   }
   
-  public function rest_add()
+  public function addrow()
+  {
+    $row_id = $this->Entry->addSubdocument( array(
+        'blocks' => array()
+    ), array(
+        'id' => $this->request->data ['entry_id'],
+        'path' => 'rows'
+    ));
+    
+    $this->set( array(
+        'row_id' => $row_id,
+        '_serialize' => array( 'row_id')
+    ));
+  }
+  
+  public function add()
   {
     $data = array(
-        'entry_id' => $this->request->data ['entry_id'],
         'type' => $this->request->data ['type'],
     );
     
-    $this->Block->create();
-    $this->Block->save( $data);
+    $data = $this->Entry->setBlockDefaults( $data);
     
-    $block = $this->Block->findById( $this->Block->id);    
-    
-    $count = $this->Block->find( 'count', array(
-        'conditions' => array(
-            'Block.entry_id' => $this->request->data ['entry_id'],
-        )
+    $block_id = $this->Entry->addSubdocument( $data, array(
+        'id' => $this->request->data ['row_id'],
+        'path' => 'rows.blocks'
     ));
     
-    $block ['Block']['key'] = ($count - 1);
+    $entry = $this->Entry->findSubdocumentById( 'Entry.rows', $this->request->data ['row_id'], 'draft');
+    $count = count( $entry ['document']['Entry']['rows']['blocks']);
     
     $block = array(
-        'id' => (int)$block ['Block']['id'],
-        'body' => 'leches',
-        'key' => $block ['Block']['key']
+        'id' => $block_id,
+        'key' => ($count - 1),
+        'row_key' => $entry ['path']['rows']
     );
     
-    // $block = array(
-    //     'id' => 4,
-    //     'body' => 'hostia',
-    //     'key' => 3
-    // );
+    $after = Configure::read( 'Block.types.'. $this->request->data ['type'] . '.afterCreate');
     
     $this->set( array(
         'success' => true,
-        'block' => $block,
-        '_serialize' => array( 'success', 'block')
+        'afterCreate' => $after,
+        'block' => array_merge( $data, $block),
+        '_serialize' => array( 'success', 'block', 'render', 'afterCreate')
     ));
   }
   
-  public function rest_edit( $id)
+  public function edit( $id)
   {
-    $block = $this->Block->find( 'first', array(
+    $entry = $this->Entry->find( 'first', array(
         'conditions' => array(
-            'Block.id' => $id
-        )
+            'Entry.rows.blocks.id' => new MongoId( $id)
+        ),
+        'revision' => 'draft'
     ));
-    
-    $this->set( array( 'block' => $block, '_serialize' => array( 'block')));
+    $entry = $this->Entry->findSubdocumentById( 'Entry.rows.blocks', $id, 'draft');
+
+    $this->set( array( 'block' => $entry ['subdocument'], '_serialize' => array( 'block')));
   }
   
-  public function rest_field()
+  public function delete( $id)
+  {
+    $this->Entry->deleteSubdocument( 'rows.blocks', $id);
+    
+    $this->set( array(
+        'success' => true,
+        '_serialize' => array( 'success')
+    ));
+  }
+  
+  public function field()
   {
     $data = $this->request->data;
     
@@ -89,8 +112,12 @@ class BlocksController extends EntryAppController
     }
     else
     {
-      $this->Block->id = $data ['id'];
-      $this->Block->saveField( $data ['field'], $data ['value']);
+      $this->Entry->updateSubdocument( 'rows.blocks', $data ['id'], array(
+          $data ['field'] => $data ['value'],
+      ), array(
+          'revision' => 'draft'
+      ));
+
       $success = true;
     }
     
@@ -102,7 +129,13 @@ class BlocksController extends EntryAppController
     ));
   }
   
-  
+/**
+ * Renderiza los bloques por AJAX.
+ * Es usado tan solo en la edición con el objetivo de mostrar los cambios en tiempo real
+ *
+ * @param string $id 
+ * @return void
+ */
   public function view( $id)
   {
     $this->layout = 'ajax';
@@ -116,7 +149,24 @@ class BlocksController extends EntryAppController
     $block ['Photo'] = $_block ['Photo'];
     
     $this->set( compact( 'block'));
-    
     $this->render( 'Blocks/types/'. $block ['type']);
+  }
+  
+  
+  public function resize()
+  {
+    $this->Entry->updateSubdocument( 'rows.blocks', $this->request->data ['id'], array(
+        'cols' => $this->request->data ['value']
+    ), array(
+        'revision' => 'draft'
+    ));
+    
+    $this->set( array(
+        'success' => true,
+        '_serialize' => array(
+            'success'
+        )
+    ));  
+    
   }
 }

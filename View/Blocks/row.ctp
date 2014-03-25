@@ -1,0 +1,1 @@
+  <?= $this->Entry->addBlock() ?>  

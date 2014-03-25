@@ -1,32 +1,34 @@
 <?php
 
+/**
+ * Tipos de bloque
+ * 
+ * @param 'key' El nombre único de key
+ * @param 'name' El nombre humano del tipo de bloque
+ * @param 'afterCreate' Que es lo que hace después de ser creado
+ *          'render': añade el nuevo bloque directamente en la vista
+ *          'edit': abre el cuadro de dialogo de edición
+ */
+ 
 $config ['Block']['types'] = array(
-    array(
+    'text' => array(
         'key' => 'text',
-        'name' => 'Texto',
-        'fields' => array(
-            'body'
-        )
+        'name' => __d( 'admin', 'Texto'),
+        'afterCreate' => 'render'
     ),
-    array(
+    'gallery' => array(
         'key' => 'gallery',
-        'name' => 'Galería de fotos',
-        'fields' => array(
-            'title'
-        )
+        'name' => __d( 'admin', 'Galería de fotos'),
+        'afterCreate' => 'edit'
     ),
-    array(
+    'video' => array(
         'key' => 'video',
-        'name' => 'Video',
-        'fields' => array(
-            'title'
-        )
+        'name' => __d( 'admin', 'Video'),
+        'afterCreate' => false
     ),
-    array(
+    'files' => array(
         'key' => 'files',
-        'name' => 'Archivos',
-        'fields' => array(
-            'title'
-        )
+        'name' => __d( 'admin', 'Archivos'),
+        'afterCreate' => false
     ),
 );

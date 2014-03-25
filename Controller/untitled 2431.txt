@@ -1,0 +1,61 @@
+{
+    "_id" : ObjectId("532afd0acae8b72676000006"),
+    "draft" : {
+        "deleted" : 0,
+        "modified" : ISODate("2014-03-20T14:36:58.000Z"),
+        "removed" : 0,
+        "rows" : [ 
+            {
+                "blocks" : [ 
+                    {
+                        "type" : "text",
+                        "title" : "",
+                        "body" : "<h1>Fila 0</h1>\n\n<p>Un texto base para el bloque</p>\n",
+                        "sort" : 0,
+                        "cols" : 2,
+                        "photos" : [],
+                        "id" : ObjectId("532afd0acae8b72676000003")
+                    }, 
+                    {
+                        "type" : "text",
+                        "title" : "",
+                        "body" : "<h1>Fila 1</h1>\n\n<p>Un texto base para el bloque</p>\n",
+                        "sort" : 2,
+                        "cols" : 6,
+                        "photos" : [],
+                        "id" : ObjectId("532afd94cae8b72676000007")
+                    }
+                ],
+                "id" : ObjectId("532afd0acae8b72676000002"),
+                "sort" : 1
+            }, 
+            {
+                "blocks" : [ 
+                    {
+                        "type" : "text",
+                        "title" : "",
+                        "body" : "<h1>Fila 2</h1>\n\n<p>Un texto base para el bloque</p>\n",
+                        "sort" : 1,
+                        "cols" : 6,
+                        "photos" : [],
+                        "id" : ObjectId("532afdc2cae8b7de7000000c")
+                    }
+                ],
+                "id" : ObjectId("532afd99cae8b72676000009"),
+                "sort" : 1
+            }, 
+            {
+                "sort" : 2,
+                "blocks" : [],
+                "id" : ObjectId("532afd9acae8b7dc7000000c")
+            }, 
+            {
+                "sort" : 3,
+                "blocks" : [],
+                "id" : ObjectId("532afdaacae8b7de7000000b")
+            }
+        ],
+        "section_id" : 2
+    },
+    "modified" : ISODate("2014-03-20T14:39:38.131Z")
+}
