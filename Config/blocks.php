@@ -9,7 +9,7 @@
  *          'render': añade el nuevo bloque directamente en la vista
  *          'edit': abre el cuadro de dialogo de edición
  */
- 
+
 $config ['Block']['types'] = array(
     'text' => array(
         'key' => 'text',
@@ -29,6 +29,11 @@ $config ['Block']['types'] = array(
     'files' => array(
         'key' => 'files',
         'name' => __d( 'admin', 'Archivos'),
-        'afterCreate' => false
+        'afterCreate' => 'edit'
+    ),
+    'form' => array(
+        'key' => 'form',
+        'name' => __d( 'admin', 'Formulario'),
+        'afterCreate' => 'edit'
     ),
 );

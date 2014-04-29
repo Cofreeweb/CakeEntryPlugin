@@ -18,11 +18,11 @@ class BlocksController extends EntryAppController
   {
     if( $this->request->is( 'post', 'put'))
     {
-      if( isset( $this->request->data ['photos']))
-      {
-        unset( $this->request->data ['photos']);
-      }
-      
+      // if( isset( $this->request->data ['uploads']))
+      // {
+      //   unset( $this->request->data ['uploads']);
+      // }
+      // 
       $this->Entry->updateSubdocument( 'rows.blocks', $this->request->data ['id'], $this->request->data, array(
           'revision' => 'draft'
       ));
@@ -41,12 +41,20 @@ class BlocksController extends EntryAppController
         'path' => 'rows'
     ));
     
+    $row = $this->Entry->findSubdocumentById( 'Entry.rows', $row_id, 'draft');
+    
     $this->set( array(
         'row_id' => $row_id,
-        '_serialize' => array( 'row_id')
+        'row' => $row ['subdocument'],
+        '_serialize' => array( 'row_id', 'row')
     ));
   }
   
+/**
+ * Añade un bloque a una fila
+ *
+ * @return void
+ */
   public function add()
   {
     $data = array(
@@ -91,10 +99,33 @@ class BlocksController extends EntryAppController
 
     $this->set( array( 'block' => $entry ['subdocument'], '_serialize' => array( 'block')));
   }
-  
-  public function delete( $id)
+
+/**
+ * Borra un bloque
+ *
+ * @param string $id 
+ * @return void
+ */
+  public function delete()
   {
-    $this->Entry->deleteSubdocument( 'rows.blocks', $id);
+    $this->Entry->deleteSubdocument( 'rows.blocks', $this->request->data ['id']);
+    
+    $this->set( array(
+        'success' => true,
+        '_serialize' => array( 'success')
+    ));
+  }
+  
+  
+/**
+ * Borra una fila
+ *
+ * @param string $id 
+ * @return void
+ */
+  public function delete_row()
+  {
+    $this->Entry->deleteSubdocument( 'rows', $this->request->data ['id']);
     
     $this->set( array(
         'success' => true,

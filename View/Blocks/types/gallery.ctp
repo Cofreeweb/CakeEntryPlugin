@@ -1,13 +1,12 @@
 <div>
   <? if( $this->Inline->isModeEditor()): ?>
     <div class="sortable-move"><?= __d( 'admin', 'Mover')?></div>
-    <?#= $this->Entry->buttonDelete( @$block) ?>
   <? endif ?>
-  <?= $this->Entry->buttonDelete( @$block) ?>
   <h3><?= $block ['title'] ?></h3>
+  
   <div id="flexslider_<?= $block ['id'] ?>" class="flexslider">
     <ul class="slides">
-    <? foreach( $block ['photos'] as $photo): ?>  
+    <? foreach( $block ['uploads'] as $photo): ?>  
         <li><?= $this->Asset->image( $photo, array(
             'size' => 'big'
         )) ?></li>

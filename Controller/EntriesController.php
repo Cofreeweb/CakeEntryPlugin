@@ -10,6 +10,8 @@ class EntriesController extends EntryAppController
   
   public $helpers = array( 'Entry.Entry');
   
+  public $components = array( 'Upload.Uploader');
+  
   public function beforeFilter()
   {
     parent::beforeFilter();
@@ -23,7 +25,7 @@ class EntriesController extends EntryAppController
   {
     $revision = isset( $this->request->params ['edit']) ? 'draft' : 'published';
     $entry = $this->Entry->getEntry( $this->request->params ['section_id'], $revision);
-    
+
     if( !$entry)
     {
       throw new NotFoundException( 'Entrada no encontrada');
@@ -76,7 +78,7 @@ class EntriesController extends EntryAppController
   {
     // $entry = $this->Entry->getEntry( $this->request->params ['section_id']);
     $this->set( array(
-        'entry' => array( 'body' => 'hostias', 'sump' => 'Pedrín'),
+        'entry' => array( 'body' => 'asd', 'sump' => 'Pedrín'),
         '_serialize' => array(
             'entry'
         )
@@ -87,6 +89,14 @@ class EntriesController extends EntryAppController
   {
     if( isset( $this->request->data ['entry-block']))
     {
+      if( $parent_id && $block_id)
+      {
+        $data = $this->Entry->moveSubdocument( $block_id, $parent_id, array(
+            'path' => 'rows.blocks'
+        ));
+      }
+      
+      
       foreach( $this->request->data ['entry-block'] as $key => $id)
       {
         $this->Entry->updateSubdocument( 'rows.blocks', $id, array(
@@ -96,10 +106,17 @@ class EntriesController extends EntryAppController
         ));
       }      
       
-      if( $parent_id && $block_id)
+
+      $success = true;
+    }
+    elseif( isset( $this->request->data ['entry-row']))
+    {
+      foreach( $this->request->data ['entry-row'] as $key => $id)
       {
-        $data = $this->Entry->moveSubdocument( $block_id, $parent_id, array(
-            'path' => 'rows.blocks'
+        $this->Entry->updateSubdocument( 'rows', $id, array(
+            'sort' => $key
+        ), array(
+            'revision' => 'draft'
         ));
       }
       
@@ -121,81 +138,17 @@ class EntriesController extends EntryAppController
   
   public function upload()
   {
-    // La configuración del upload
-    $config = Configure::read( 'Upload.'. $this->request->query ['key']);
-    $config ['config']['fields'] = array(
-		    'dir' => 'path',
-		    'type' => 'mimetype'
-		);
-		
-    // Lee el Behavior Upload.Upload para el model asociado, pasándole los datos indicados en la configuración anteriormente leída
-    $this->Upload->Behaviors->load( 'Upload.Upload', array( 
-        'filename' => $config ['config'],
+    $this->Uploader->uploadForMongo();
+  }
+  
+  public function delete_upload()
+  {
+    $this->Entry->deleteSubdocument( 'rows.blocks.uploads', $this->request->data ['id']);
+    $this->set( array(
+        'success' => true,
+        '_serialize' => array(
+            'success'
+        )
     ));
-    
-    // Los datos a guardar
-    $data = $this->request->params ['form'];
-    $data ['content_type'] = $this->request->query ['key'];
-    $data ['model'] = $this->request->query ['model'];
-    
-    if( isset( $this->request->query ['content_id']))
-    {
-      $data ['content_id'] = $this->request->query ['content_id'];
-    }
-
-    if( $this->Upload->save( $data))
-    {
-      $last = $this->Upload->read( null);
-      $photo_id = $this->Entry->addSubdocument( $last ['Upload'], array(
-          'id' => $this->request->query ['content_id'],
-          'path' => 'rows.blocks.photos'
-      ));
-      
-      $this->set( 'success', true);
-      
-      App::uses('JsonView', 'View');
-      $View = new JsonView($this);
-            
-      if( isset( $this->request->params ['admin']))
-      {
-        $body = $View->element( 'json/'. $config ['type'], array(
-            'upload' => $last ['Upload'],
-            'alias' => $this->request->query ['alias']
-        ));
-      }
-      else
-      {
-        $body = $View->element( 'uploads/json/'. $config ['template'], array(
-            'upload' => $last ['Upload'],
-            'alias' => $this->request->query ['alias']
-        ));
-      }
-      
-      
-      if( isset( $config ['thumbnailSizes']))
-      {
-        $last ['Upload']['thumbail'] = UploadUtil::thumbailPathMulti( $last);
-      }
-      
-      $this->set( 'upload', $last ['Upload']);
-      $this->set( compact( 'body'));
-      $this->set( '_serialize', array( 'success', 'upload', 'body'));
-    }
-    else
-    {
-      $errors = $this->Upload->invalidFields();
-      
-      if( isset( $errors ['filename']))
-      {
-        $this->set( 'error', current( $errors ['filename']));
-      }
-      else
-      {
-        $this->set( 'error', false);
-      }
-
-      $this->set( 'success', false);
-      $this->set( '_serialize', array( 'success', 'error'));
-    }
   }
 }

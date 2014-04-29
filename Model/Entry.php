@@ -6,6 +6,8 @@ App::uses('EntryAppModel', 'Entry.Model');
  */
 class Entry extends EntryAppModel 
 {
+  public $useDbConfig = 'mongo';
+  
   public $actsAs = array(
 		'Upload.Uploadable',
     'Cofree.Deletable',
@@ -13,6 +15,7 @@ class Entry extends EntryAppModel
     'Mongodb.SqlCompatible',
     'Mongodb.Revision',
     'Mongodb.Sortable' => array(
+        'rows',
         'rows.blocks'
     ),
 	);
@@ -33,10 +36,10 @@ class Entry extends EntryAppModel
       )
   );
   
-  public $useDbConfig = 'mongo';
+  
   
   public $mongoSchema = array(
-    'title' => array(' type' =>'string'),
+    'title' => array('type' =>'string'),
     'section_id' => array( 'type' =>'integer'),
     'user_id' => array( 'type' =>'integer'),
     'rows' => array(
@@ -47,7 +50,9 @@ class Entry extends EntryAppModel
             'body' => array( 'type' => 'text', 'default' => null),
             'sort' => array( 'type' => 'integer', 'default' => 0),
             'cols' => array( 'type' => 'integer', 'default' => 6),
-            'photos' => array(
+            'emails' => array('type' => 'string', 'default' => NULL),
+            'form' => array( 'type' => 'text', 'default' => null),
+            'uploads' => array(
                 'filename' => array( 'type' => 'string'),
                 'path' => array( 'type' => 'string'),
                 'extension' => array('type' => 'string', 'default' => NULL),
@@ -76,7 +81,14 @@ class Entry extends EntryAppModel
       ),
       'gallery' => array(
           'title' => 'Un título para la galería',
-          'photos' => array()
+          'uploads' => array()
+      ),
+      'files' => array(
+          'title' => 'Un título para la galería',
+          'uploads' => array()
+      ),
+      'form' => array(
+          'body' => array(),
       )
   );
   
@@ -120,11 +132,11 @@ class Entry extends EntryAppModel
   {
     $entry = $this->find( 'first', array(
         'conditions' => array(
-            'Entry.section_id' => (int)$section_id
+            'Entry.section_id' => $section_id
         ),
         'revision' => $revision
     ));
-
+    
     if( !$entry && $revision == 'draft')
     {
       $this->createEntry( $section_id);

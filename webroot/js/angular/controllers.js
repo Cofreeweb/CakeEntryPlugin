@@ -4,29 +4,34 @@
 * Creación de una fila
 *
 */
-adminApp.controller( 'BlocksAddRowCtrl', function( $scope, $routeParams, $http, $compile, $rootScope, $location) {
-    if( $routeParams.entry_id) {
-      $scope.entry_id = $routeParams.entry_id;
-    }
-        
+adminApp.controller( 'BlocksAddRowCtrl', function( $scope, $routeParams, $http, $compile, $rootScope, $location, $log) {
+    
+    $scope.post = $rootScope.post;
+
     // Creación de un nuevo bloque
     if( $routeParams.entry_id) {
+      $scope.entry_id = $routeParams.entry_id;
+      
       $http.post( '/entry/blocks/addrow.json', {
         entry_id: $routeParams.entry_id,
       }).success(function( data){
         $scope.row_id = data.row_id;
-        
-        $scope.template = '/angular/template?t=Entry.blocks/row';
+        $rootScope.entry.Entry.rows.push( data.row);
+
+        $scope.template = '/angular/template?t=Entry.entries/_row:row_id=' + data.row_id;
         // Añade el HTML de la nueva fila
-        var html = '<div id="entry-row-' + data.row_id + '" class="row inline-entry-row-sortable" ng-include="template">asdfsd</div>'
+        var html = '<div id="entry-row-' + data.row_id + '" class="row inline-entry-row-sortable" ng-include="template"></div>';
         angular.element( '.blocks').append( $compile( html)($scope))
       });      
     }    
 });
 
 
-// BlocksAddCtrl
-// Añade un block nuevo
+/**
+* BlocksAddCtrl
+*
+* Añade un block nuevo
+*/
 adminApp.controller( 'BlocksAddCtrl', function( $scope, $routeParams, $http, $compile, $rootScope, $location) {
     if( $routeParams.row_id) {
       $scope.row_id = $routeParams.row_id;
@@ -38,6 +43,7 @@ adminApp.controller( 'BlocksAddCtrl', function( $scope, $routeParams, $http, $co
         type: $routeParams.type
       }).success(function( data){
         $scope.block = data.block;
+        // Añade el bloque al $rootScope, a la fila que le corresponde, dado el row_key (indice númerico del array de rows)
         $rootScope.entry.Entry.rows[data.block.row_key].blocks.push( data.block);
         
         // Es un tipo de bloque que se va a renderizar de inmediato, una vez creado
@@ -62,15 +68,47 @@ adminApp.controller( 'BlocksAddCtrl', function( $scope, $routeParams, $http, $co
 * Edición de los bloques con cuadro de edición, es decir, los que no son inline
 *
 */
-adminApp.controller( 'BlocksEditCtrl', function( $scope, $routeParams, $http, $compile, $rootScope) {
+adminApp.controller( 'BlocksEditCtrl', function( $scope, $routeParams, $http, $compile, $rootScope, $builder, $validator) {
     $http.get('/entry/blocks/edit/' + $routeParams.id +'.json').success( function(data) {
       $scope.block = data.block;
       $scope.template = '/angular/template?t=Entry.blocks/edit/' + data.block.type;
+      
+       // FORMULARIO
+      if( $scope.block.type == 'form' && $builder.forms['default'].length == 0) {
+        
+        for (var i=0; i < $scope.block.form.length; i++) {
+          $builder.addFormObject( 'default', $scope.block.form [i]);
+        };
+        
+      }
+      $scope.form = $builder.forms['default'];
     });
+    
     
     $scope.submitBlock = function( action){
       $http.post( '/admin/entry/blocks/edit.json', $scope.block).success( function( data){
-
+        var id = $scope.block.id;
+        $http.get( '/entry/entries/block/' + id).success( function( data){
+          angular.element( '#entry-block-' + id).html( data);
+          angular.element( '#entry-block-' + id + ' a').bind('click', function(e) {
+            // this part keeps it from firing the click on the document.
+            e.stopPropagation();
+          });
+        });
+      })
+    }
+    
+    $scope.submitForm = function(){
+      $scope.block.form = $scope.form;
+      $http.post( '/admin/entry/blocks/edit.json', $scope.block).success( function( data){
+        var id = $scope.block.id;
+        $http.get( '/entry/entries/block/' + id).success( function( data){
+          angular.element( '#entry-block-' + id).html( data);
+          angular.element( '#entry-block-' + id + ' a').bind('click', function(e) {
+            // this part keeps it from firing the click on the document.
+            e.stopPropagation();
+          });
+        });
       })
     }
     
@@ -79,23 +117,15 @@ adminApp.controller( 'BlocksEditCtrl', function( $scope, $routeParams, $http, $c
       if( !$scope.block) {
         return;
       }
-      
-      var id = $scope.block.id;
-      $http.get( '/entry/entries/block/' + id).success( function( data){
-        angular.element( '#entry-block-' + id).html( data);
-        angular.element( '#entry-block-' + id + ' a').bind('click', function(e) {
-          // this part keeps it from firing the click on the document.
-          e.stopPropagation();
-        });
-      });
-      
-      
-    }
+    };
+
 });
 
+
 /**
-* Borrado de los bloques
+* BlocksDeleteCtrl
 *
+* Borrado de los bloques
 */
 adminApp.controller( 'BlocksDeleteCtrl', function( $scope, $routeParams, $http) {
     $http.get('/entry/blocks/delete/' + $routeParams.id +'.json').success( function(data) {
@@ -105,7 +135,22 @@ adminApp.controller( 'BlocksDeleteCtrl', function( $scope, $routeParams, $http) 
 });
 
 
+/**
+* BlocksDeleteRowCtrl
+*
+* Borrado de las filas
+*/
+adminApp.controller( 'BlocksDeleteRowCtrl', function( $scope, $routeParams, $http) {
+    $http.get('/entry/blocks/delete_row/' + $routeParams.id +'.json').success( function(data) {
+    });
+    
+    angular.element( '#entry-row-' + $routeParams.id).remove();
+});
+
+
+
 adminApp.controller( 'EntriesViewCtrl', function( $scope, $routeParams, $http) {
-  
+
+
 
 });

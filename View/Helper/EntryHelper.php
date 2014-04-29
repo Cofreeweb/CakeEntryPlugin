@@ -20,7 +20,7 @@ class EntryHelper extends AppHelper
  */
   public function beforeLayout()
   { 
-    if( $this->Inline->isModeEditor() && !$this->request->is( 'ajax'))
+    if( $this->Inline->isModeEditor() && !$this->request->is( 'ajax') && !$this->request->accepts( 'application/json'))
     {
       $script = '$(".rows").sortable({
         items: ".inline-entry-row-sortable",
@@ -96,7 +96,7 @@ class EntryHelper extends AppHelper
       return false;
     }
     
-    return '<a href="#blocks/add/'. $row_id .'">'. __d( 'admin', 'Añadir bloque') .'</a>';
+    return '<a  href="#blocks/add/'. $row_id .'">'. __d( 'admin', 'Añadir bloque') .'</a>';
   }
   
 /**
@@ -127,13 +127,32 @@ class EntryHelper extends AppHelper
   	));
   }
   
-  public function buttonDelete( $block = null)
+  public function buttonDeleteRow( $row_id)
+  {
+    if( !$this->Inline->isModeEditor())
+    {
+      return false;
+    }
+
+    return '<span data-header="'. __d( "admin", "¿Estás seguro de que quieres borrar esta fila?") .'" delete-content="/entry/blocks/delete_row.json" data-id="'. 
+      $row_id .'" data-remove="#entry-row-'. $row_id .'">'. __d( 'admin', 'Eliminar') .'</span>';
+  }
+  
+/**
+ * Botón para borrar un bloque
+ *
+ * @param array $block 
+ * @return void
+ */
+  public function buttonDeleteBlock( $block = null)
   {
     if( !$this->Inline->isModeEditor())
     {
       return false;
     }
     
-    return '<a ng-click="launch(\'confirm\')" href="#/blocks/delete/'. $this->Seter->val( @$block ['id'], 'block.id') .'">'. __d( 'admin', 'Eliminar') .'</a>';
+    return '<span data-header="'. __d( "admin", "¿Estás seguro de que quieres borrar este bloque?") .'" delete-content="/entry/blocks/delete.json" data-id="'. 
+      $block ['id'] .'" data-remove="#entry-block-'. $block ['id'] .'">'. __d( 'admin', 'Eliminar') .'</span>';
+    
   }
 }

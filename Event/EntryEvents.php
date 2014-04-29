@@ -32,7 +32,7 @@ class EntryEvents extends Object implements CakeEventListener
 
       Routable::nestedRoutes( $sections);
       Router::reload();
-      $controller->set( 'redirect', Sections::url( $controller->Section->id));
+      $controller->set( 'redirect', Sections::url( $controller->Section->id, true));
     }
   }
 }

@@ -3,15 +3,18 @@
       'ng-model' => 'block.title',
       'label' => 'Título'
   )) ?>
-  <input type="submit" value="Guardar" />
+
+
+  <div upload-gallery upload-scope="block.uploads" uploaded-files-model="modelName" upload-destination="/entry/entries/upload.json?model=Block&content_id={{block.id}}&key=gallery&alias=Photo" upload-extensions="jpg,jpeg,gif,png"></div>
+
+  <ul ui-sortable ng-model="block.uploads">
+    <li id="upload_{{ asset.id }}" ng-repeat="asset in block.uploads">
+      <img src="{{ asset.paths.thm }}" />
+      <input type="text" ng-model="block.uploads[$index].title" />
+      <span delete-content delete-scope="block.uploads" delete-scope-index="{{$index}}" data-header="<?= __d( "admin", "¿Estás seguro de que quieres borrar esta foto?") ?>" data-remove="#upload_{{ asset.id }}" flexslider="#flexslider_{{ block.id }}" data-id="{{ asset.id }}"><?= __d( 'admin', 'Borrar') ?></span>
+    </li>
+  </ul>
+
+  <?= $this->Form->submit( __d( 'admin', 'Guardar'))?>
 </form>
-
-<div upload-gallery uploaded-files-model="modelName" upload-destination="/entry/entries/upload.json?model=Block&content_id={{block.id}}&key=block&alias=Photo" upload-extensions="jpg,gif,png"></div>
-
-
-<ul>
-  <li id="upload_{{asset.id}}" ng-repeat="asset in block.photos">
-    <img src="{{asset.paths.thm}}" />
-    <a data-rel="#upload_{{asset.id}}" data-filename="asset.filename" data-model="{{asset.model}}" data-id="{{asset.id}}" data-delete-once="true" data-alert="<?= __d( "admin", "¿Estás seguro?") ?>" class="upload-delete" ng-click="deleteUpload( this)"><?= __d( 'admin', 'Borrar') ?></a>
-  </li>
-</ul>
+<!-- <pre style="font-size: 9px">{{ block.uploads | json }}</pre> -->

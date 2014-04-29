@@ -11,6 +11,11 @@ $config ['SectionSettings'] = array(
         'controller' => 'entries',
         'action' => 'view'
     ),
+    'edit' => array(
+      'plugin' => 'entry',
+      'controller' => 'entries',
+      'action' => 'edit'
+    ),
     'admin' => array(
         array(
             'plugin' => 'entry',
