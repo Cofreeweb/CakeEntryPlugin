@@ -18,7 +18,7 @@
   <div class="blocks">
   <? foreach( $entry ['Entry']['rows'] as $row_key => $row): ?>
       <div id="entry-row-<?= $row ['id'] ?>" data-id="<?= $row ['id'] ?>" class="row inline-entry-row-sortable">
-        <?= $this->Element( '../Entries/_row', array(
+        <?= $this->element( '../Entries/_row', array(
             'row' => $row,
             'row_key' => $row_key
         ))?>
@@ -26,5 +26,3 @@
   <? endforeach ?>
   </div>
 </div>
-
-<?= __( "Me gusta mucho el mundo")?>
